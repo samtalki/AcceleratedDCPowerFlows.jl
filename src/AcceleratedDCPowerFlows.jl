@@ -22,7 +22,8 @@ export branch_susceptance_matrix
 export from_power_models
 export ptdf, full_ptdf, lazy_ptdf
 export lodf, full_lodf, lazy_lodf
-export compute_flow!
+export dcpf, full_dcpf, lazy_dcpf
+export compute_flow!, solve!
 
 # Some global definitions
 """
@@ -34,7 +35,9 @@ default_backend() = KA.CPU()
 
 include("core/network.jl")
 include("graph/bridges.jl")
+include("inverse_susceptance/inverse_susceptance.jl")
 include("ptdf/ptdf.jl")
 include("lodf/lodf.jl")
+include("dcpf/dcpf.jl")
 
 end  # module
