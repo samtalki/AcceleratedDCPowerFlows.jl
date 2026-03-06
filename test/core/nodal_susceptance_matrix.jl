@@ -12,23 +12,34 @@ function test_nodal_susceptance_matrix()
     @test size(A, 2) == N
     @test size(A, 3) == size(A, 4) == 1
     @test_throws ErrorException size(A, 0)
+    backend = KA.get_backend(A)
+    @test isa(backend, typeof(APF.default_backend()))
 
     # Reference implementation
     A_pm = PM.calc_basic_susceptance_matrix(data)
     @test sparse(A) ≈ A_pm
 
     # Check matvec and matmat products
+    # These will dispatch to a CPU-specific implementation
     x = rand(N)
     y_pm = A_pm * x
-    y = zeros(N)
+    y = rand(N)
     LinearAlgebra.mul!(y, A, x)
     @test y ≈ y_pm
+    # Trigger backend-agnostic KA kernels
+    y = rand(N)
+    invoke(APF._unsafe_mul!, Tuple{KA.Backend,AbstractVecOrMat,APF.NodalSusceptanceMatrix,AbstractVecOrMat}, backend, y, A, x)
+    @test y ≈ y_pm 
 
-    x = rand(N, 3)
+    x = rand(N, 2)
     y_pm = A_pm * x
-    y = zeros(N, 3)
+    y = rand(N, 2)
     LinearAlgebra.mul!(y, A, x)
     @test y ≈ y_pm
+    # Trigger backend-agnostic KA kernels
+    y = rand(N, 2)
+    invoke(APF._unsafe_mul!, Tuple{KA.Backend,AbstractVecOrMat,APF.NodalSusceptanceMatrix,AbstractVecOrMat}, backend, y, A, x)
+    @test y ≈ y_pm 
 
     return nothing
 end
